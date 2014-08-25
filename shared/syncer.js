@@ -29,10 +29,15 @@ if (isServer) {
 
 var syncer = module.exports;
 
+function toQueryString(params) {
+  return isServer ? qs.stringify(params) : $.param(params)
+}
+
 function clientSync(method, model, options) {
   var error;
   options = _.clone(options);
-  options.url = this.getUrl(options.url, true);
+  options.url = this.getUrl(options.url, true, options.data);
+  delete options.data
   error = options.error;
   if (error) {
     options.error = function(xhr) {
@@ -58,7 +63,7 @@ function serverSync(method, model, options) {
   var api, urlParts, verb, req;
 
   options = _.clone(options);
-  options.url = this.getUrl(options.url, false);
+  options.url = this.getUrl(options.url, false, options.data);
   verb = methodMap[method];
   urlParts = options.url.split('?');
   req = this.app.req;
@@ -118,7 +123,16 @@ syncer.getUrl = function getUrl(url, clientPrefix, params) {
   if (clientPrefix && !~url.indexOf('://')) {
     url = this.formatClientUrl(url, _.result(this, 'api'));
   }
-  return this.interpolateParams(this, url, params);
+
+  url = this.interpolateParams(this, url, params);
+  if (!_.isEmpty(params)) {
+    if (url.match(/\?/)) {
+      url += '&' + toQueryString(params);
+    } else {
+      url += '?' + toQueryString(params);
+    }
+  }
+  return url;
 };
 
 syncer.formatClientUrl = function(url, api) {
@@ -229,5 +243,6 @@ syncer.interpolateParams = function interpolateParams(model, url, params) {
       delete params[property];
     });
   }
+  delete params.id;
   return url;
 };

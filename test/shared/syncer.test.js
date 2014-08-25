@@ -296,6 +296,10 @@ describe('syncer', function() {
     it("should support absolute URI with port", function() {
       syncer.getUrl('http://www.example.com:8080/api/foo').should.eql('http://www.example.com:8080/api/foo');
     });
+
+    it("should support addition of query params to url", function() {
+      syncer.getUrl('http://www.example.com/api/foo', true, { bar: 'baz' }).should.eql('http://www.example.com/api/foo?bar=baz');
+    });
   });
 
   describe('formatClientUrl', function() {
