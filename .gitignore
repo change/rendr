@@ -5,3 +5,5 @@ coverage
 *.sw?
 .DS_Store
 runtime.json
+
+*.pem
